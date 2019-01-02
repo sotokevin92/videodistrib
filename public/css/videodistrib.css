@@ -1,0 +1,38 @@
+.video_placeholder {
+    background-color: blue;
+    margin: 6px 10px 6px 10px;
+    min-height: 160px;
+}
+
+.sidebar-nav li.activo {
+    background-color: darkslateblue;
+}
+
+.sidebar-nav li.activo a {
+    color: white;
+}
+
+span.separador {
+    color: #AAAAAA;
+    margin-left: 1em;
+    margin-right: 1em;
+}
+
+table td {
+    vertical-align: middle!important;
+}
+table th {
+    vertical-align: middle!important;
+}
+
+table .centrado th {
+    text-align: center!important;
+}
+
+td.centrado {
+    text-align: center!important;
+}
+
+td.aderecha {
+    text-align: right!important;
+}

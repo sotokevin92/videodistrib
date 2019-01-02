@@ -1,0 +1,5 @@
+<?php
+
+return [
+    'titulo' => 'VideoDistrib',
+];
