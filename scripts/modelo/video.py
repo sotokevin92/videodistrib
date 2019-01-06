@@ -23,6 +23,14 @@ class Video:
         return int(self.hash, base=16)
 
 
+    def __repr__(self):
+        return "<" + self.__class__.__name__ + "> " + str(self)
+
+
+    def __str__(self):
+        return str(self.nombre_archivo) + ' (' + str(self.hash) + ')'
+
+
     @classmethod
     def parseJSON(cls, jsonstr):
         if isinstance(jsonstr, str):

@@ -1,4 +1,4 @@
-import json
+import os, json
 
 class Configuracion:
     """
@@ -21,6 +21,9 @@ class Configuracion:
     # Video a reproducir cuando la reproducción principal esté detenida
     idle_file = None
 
+    # Subcarpeta local para descargar y reproducir los archivos de video
+    subfolder_contenido = None
+
     def __init__(self, la_data):
         """
         Constructor principal.
@@ -36,7 +39,12 @@ class Configuracion:
         self.server = la_data['server']
         self.client_id = la_data['client_id']
         self.player_cmd = la_data['cmd']
-        self.idle_file = la_data['idle_file']
+        if os.path.isfile(os.path.realpath(la_data['idle_file'])):
+            self.idle_file = os.path.realpath(la_data['idle_file'])
+        else:
+            self.idle_file = None
+        
+        self.subfolder_contenido = os.path.realpath(la_data['subfolder_contenido'])
 
 
     def __str__(self):

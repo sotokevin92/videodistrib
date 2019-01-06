@@ -9,6 +9,7 @@ class Player:
     # Directiva de linea de comandos para la llamada al sistema de la ejecución.
     cmd = None
     proceso = None
+    estado = None
 
     def __init__(self, cmd):
         self.cmd = cmd
@@ -20,7 +21,7 @@ class Player:
         """
 
         # Detener la reproducción preventivamente
-        self.detener()
+        self.stop()
 
         # Armar directiva de comando
         cmd_exec = self.cmd.replace("_FILE_", path)
@@ -29,10 +30,16 @@ class Player:
         with open(os.devnull, 'w') as FNULL:
             self.proceso = Popen(cmd_exec, stdout=FNULL, stderr=FNULL)
 
-    def detener(self):
+    def stop(self):
         """
         Envía la señal de terminación al proceso actual, si lo hay.
         """
 
-        if self.proceso is not None and self.proceso.poll() is None:
+        if self.reproduciendo():
             self.proceso.kill()
+
+    def reproduciendo(self):
+        return self.proceso is not None and self.proceso.poll() is None
+
+    def setEstado(self, st=None):
+        self.estado = st

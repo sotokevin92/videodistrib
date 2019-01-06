@@ -1,6 +1,6 @@
 from modelo.lista import Lista
 from modelo.video import Video
-import requests, queue, os, hashlib
+import requests, os, hashlib, json
 
 class Sincro:
     """
@@ -25,7 +25,7 @@ class Sincro:
     URL_FILES = None
 
     # Carpeta local de contenido para los archivos de video descargados
-    CARPETA_VIDEOS_LOCAL = 'contenido'
+    CARPETA_VIDEOS_LOCAL = None
 
     # Path absoluto a la carpeta local de contenido (completada en constructor)
     PATH_CONTENIDO = None
@@ -35,15 +35,14 @@ class Sincro:
     # Última instancia de la lista de reproducción para este cliente
     lista = None
 
-    # Cola de comunicación con el proceso principal
-    principal = None
-
-    def __init__(self, client_id, server_url, q=None):
+    def __init__(self, client_id, server_url, carpeta_local='contenido'):
         """
         Constructor principal. Toma como parámetros el client_id y la url del servidor,
         arma las URLs derivadas y las guarda en la instancia.
         """
         self.client_id = client_id
+        self.CARPETA_VIDEOS_LOCAL = carpeta_local
+
         self.URL_SERVER_BASE = server_url
 
         self.URL_BEEPS = '/'.join(
@@ -79,9 +78,7 @@ class Sincro:
             self.CARPETA_VIDEOS_LOCAL
         )
 
-        self.lista = self.getListaRemota()
-        self.principal = q
-
+        self.lista = self.ultimaLista()
 
     def __str__(self):
         return str({
@@ -93,41 +90,73 @@ class Sincro:
             'URL_FILES': self.URL_FILES
         })
 
-
     def getListaRemota(self):
         """
         Obtener la lista de reproducción para este cliente desde el servidor.
+
+        Devuelve un diccionario con claves 'json' y 'lista'.
         """
         r = requests.get(self.URL_LISTA)
-        return Lista.parseJSON(r.json())
+        if r.status_code == 200:
+            return {
+                'json': r.json(),
+                'lista': Lista.parseJSON(r.json())
+            }
+        
+        return {
+            'json': 'offline',
+            'lista': Lista()
+        }
 
+    
+    def ultimaLista(self):
+        """
+        Obtener la lista de reproducción para este cliente localmente.
+        """
+        try:
+            with open("ult_lista.json", "r") as fd:
+                return Lista.parseJSON(json.load(fd))
+        except:
+            return Lista()
 
     def necesitoSincronizar(self):
         """
         Determina si se encontraron diferencias entre la lista local y la lista remota.
         """
         lista_nueva = self.getListaRemota()
-        return not self.lista == lista_nueva
+        if lista_nueva['json'] == 'offline':
+            return False
 
+        lista_nueva_lista = lista_nueva['lista']
+        return not self.lista == lista_nueva_lista
 
-    def sincroArchivos(self):
+    def sincronizar(self):
         """
         Determinar las diferencias de archivos y sincronizar lo necesario.
+
+        TODO: cancelar la sincro o reintentar si falla una descarga
         """
         if self.necesitoSincronizar():
             print("Actualizar lista...")
-            self.lista = self.getListaRemota()
+            val = self.getListaRemota()
+            self.lista = val['lista']
+            with open("tmp_lista.json", "w") as fd:
+                json.dump(val['json'], fd)
 
         cambios = self.verificarContenido()
+        for id_video in cambios['descargar']:
+            print("Descargar id " + str(id_video))
+            self.descargarVideo(id_video)
+
         for archivo in cambios['eliminar']:
             print("Borrar " + archivo)
             os.unlink(
                 os.path.join(self.PATH_CONTENIDO, archivo)
             )
 
-        for id_video in cambios['descargar']:
-            print("Descargar id " + str(id_video))
-            self.descargarVideo(id_video)
+        cambios = self.verificarContenido()
+
+        return cambios['descargar'].__len__() == 0
 
 
     def verificarContenido(self):
@@ -153,6 +182,10 @@ class Sincro:
 
         videos_lista = self.lista.videos()
         for archivo in videos_lista:
+            if archivo not in videos_local:
+                retval['descargar'].append(videos_lista[archivo]['id'])
+                continue
+
             if videos_local[archivo] != videos_lista[archivo]['hash']:
                 retval['eliminar'].append(archivo)
                 retval['descargar'].append(videos_lista[archivo]['id'])
@@ -163,37 +196,68 @@ class Sincro:
 
         return retval
 
-
     def getHashArchivo(self, path_archivo):
         """
         Calcular la suma hash de un archivo dado
-        TODO: mover a módulo auxiliar
         """
         este_hash = hashlib.sha1()
         with open(path_archivo, 'rb') as fd:
             while True:
-                data = fd.read(65536)
+                data = fd.read()
                 if not data:
                     break
                 este_hash.update(data)
 
         return este_hash.hexdigest()
 
-
     def descargarVideo(self, id_video, nombre_archivo=None):
         url_videoinfo = '/'.join([self.URL_FILES, str(id_video)])
+        try:
+            r = requests.get(url_videoinfo).json()
 
-        r = requests.get(url_videoinfo).json()
+            url_videofile = r['url']
+            if (nombre_archivo):
+                nombre_guardar = nombre_archivo
+            else:
+                nombre_guardar = r['url'].split('/')[-1]
 
-        url_videofile = '/'.join([self.URL_SERVER_BASE, r['url']])
-        if (nombre_archivo):
-            nombre_guardar = nombre_archivo
-        else:
-            nombre_guardar = r['url'].split('/')[-1]
+            r = requests.get(url_videofile)
+            destino = os.path.join(self.PATH_CONTENIDO, nombre_guardar)
+            with open(destino, "wb") as fd:
+                fd.write(r.content)
 
-        r = requests.get(url_videofile)
-        destino = os.path.join(self.PATH_CONTENIDO, nombre_guardar)
-        with open(destino, "wb") as fd:
-            fd.write(r.content)
+            return True
+        except:
+            return False
 
-        return r.status_code
+    def registrarBeep(self, id_lista, nro):
+        try:
+            requests.post(self.URL_BEEPS, {
+                'id_lista': id_lista,
+                'orden': nro
+            })
+
+            return True
+        except: 
+            return False
+
+    def getListaLocal(self):
+        retlista = []
+        for video in self.lista.entries:
+            fullpath = os.path.join(self.CARPETA_VIDEOS_LOCAL, video.nombre_archivo)
+            if ' ' in fullpath:
+                if os.name == 'nt':
+                    fullpath = '"' + fullpath + '"'
+                else:
+                    fullpath = fullpath.replace(' ', '\ ')
+            
+            retlista.append(fullpath)
+        
+        return retlista
+
+    def testearConexion(self):
+        try:
+            requests.head(self.URL_SERVER_BASE)
+            return True
+        except:
+            return False

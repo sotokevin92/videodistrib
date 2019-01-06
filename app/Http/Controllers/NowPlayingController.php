@@ -7,9 +7,8 @@ use App\NowPlaying;
 
 class NowPlayingController extends Controller
 {
-    public function registrar(Request $request) {
+    public function registrar(Request $request, $pantalla_id) {
         if (
-            empty($request->input('pantalla')) ||
             empty($request->input('id_lista')) ||
             empty($request->input('orden'))
         ) {
@@ -18,7 +17,7 @@ class NowPlayingController extends Controller
 
         try {
             $resul = NowPlaying::registrar(
-                is_string($request->input('pantalla')) ? intval($request->input('pantalla')) : $request->input('pantalla'),
+                $pantalla_id,
                 is_string($request->input('id_lista')) ? intval($request->input('id_lista')) : $request->input('id_lista'),
                 is_string($request->input('orden')) ? intval($request->input('orden')) : $request->input('orden')
             );

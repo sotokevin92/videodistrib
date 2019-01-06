@@ -4,14 +4,28 @@ from config import Configuracion
 from sincro import Sincro
 from player import Player
 
+class Mensaje:
+    origen = ''
+    cmd = ''
+    data = {}
+
+    def __init__(self, origen, cmd, data={}):
+        self.origen = origen
+        self.cmd = cmd
+        self.data = data
+
+
 class VideoCliente:
     path_config = None
+
+    q_player = None
+    q_back = None
 
     CONFIG = None
     SINCRO = None
     PLAYER = None
 
-    def __init__(self, config_file="cfg.json"):
+    def __init__(self, config_file="default_cfg.json"):
         self.path_config = os.path.join(os.path.dirname(os.path.realpath(__file__)), config_file)
 
         if os.path.exists(self.path_config):
@@ -19,35 +33,103 @@ class VideoCliente:
         else:
             raise(Exception("Archivo de configuración no encontrado."))
 
-        self.SINCRO = Sincro(self.CONFIG.client_id, self.CONFIG.server)
+        self.SINCRO = Sincro(self.CONFIG.client_id, self.CONFIG.server, self.CONFIG.subfolder_contenido)
         self.PLAYER = Player(self.CONFIG.player_cmd)
+
+        self.q_player = queue.Queue()
+        self.q_back = queue.Queue()
 
 
     def getConfig(self, nombre_archivo):
         return Configuracion.leerJSON(nombre_archivo)
+        
 
+    def hilo_reproduccion(self):
+        orden = 0
+        lista_ciclo = []
+        while True:
+            if not self.q_player.empty():
+                msg = self.q_player.get()
 
-    def checkSincro(self):
-        # TODO: comparar playlists remota y local
-        # TODO: comparar listados de directorio de la carpeta local y la carpeta remota
-        # TODO: devolver si es necesario sincronizar
-        pass
+                if msg.cmd == 'kill':
+                    break
+            
+                if msg.cmd == 'stop':
+                    if self.CONFIG.idle_file:
+                        lista_ciclo = [ self.CONFIG.idle_file ]
+                    else:
+                        self.PLAYER.stop()
 
-    def sincronizar(self, nombre, clean=False):
-        # TODO: detener la reproducción local
-        # TODO: borrar videos de la carpeta local que no estén en el server
-        # TODO: descargar videos del server que no estén en la carpeta local
-        pass
+                    orden = 0
 
+                    self.q_back.put(
+                        Mensaje(
+                            'PLAYER',
+                            'Detenido'
+                        )
+                    )
+                    self.PLAYER.setEstado(0)
+                    continue
+                
+                if msg.cmd == 'panic':
+                    self.PLAYER.stop()
 
-    def reproducir(self):
-        # TODO: obtener listado de archivos en la carpeta local
-        # TODO: verificar cola de comandos
-        # TODO: shuffle en lista de archivos
+                    orden = 0
 
-        pass
+                    self.q_back.put(
+                        Mensaje(
+                            'PLAYER',
+                            'Detenido (sin idle play)'
+                        )
+                    )
+                    self.PLAYER.setEstado(0)
+                    continue
 
+                if msg.cmd == 'update' or msg.cmd == 'list':
+                    lista_ciclo = msg.data
+                    orden = 0
 
-app = VideoCliente()
+                    self.q_back.put(
+                        Mensaje(
+                            'PLAYER',
+                            'Aprovisionamiento de lista',
+                            lista_ciclo
+                        )
+                    )
+                    continue
+                
+                if msg.cmd == 'play':
+                    self.PLAYER.setEstado(1)
+            
+            if lista_ciclo.__len__() == 0:
+                # Nada que hacer..
+                continue
 
-exit(0)
+            if self.PLAYER.reproduciendo():
+                continue
+
+            orden = orden + 1
+            if orden > lista_ciclo.__len__():
+                orden = 1
+
+            indice = orden - 1
+
+            self.PLAYER.play(lista_ciclo[indice])
+
+            if self.PLAYER.estado != 0:
+                self.q_back.put(
+                    Mensaje(
+                        'PLAYER',
+                        'Reproduciendo',
+                        {
+                            'archivo': lista_ciclo[indice],
+                            'orden': orden
+                        }
+                    )
+                )
+        self.q_back.put(
+            Mensaje(
+                'PLAYER',
+                'Killed by cmd'
+            )
+        )

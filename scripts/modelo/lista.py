@@ -7,7 +7,7 @@ class Lista:
     vigente_desde = None
     vigente_hasta = None
 
-    def __init__(self, id, nombre, entries=[], vigente_desde=None, vigente_hasta=None):
+    def __init__(self, id=-1, nombre='', entries=[], vigente_desde=None, vigente_hasta=None):
         self.id = id
         self.nombre = nombre
         self.entries = entries
@@ -27,6 +27,10 @@ class Lista:
                 return False
 
         return True
+
+
+    def __repr__(self):
+        return repr(self.entries)
 
 
     def videos(self):
