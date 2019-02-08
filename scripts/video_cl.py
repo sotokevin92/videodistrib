@@ -50,6 +50,7 @@ class VideoCliente:
         while True:
             if not self.q_player.empty():
                 msg = self.q_player.get()
+                print(msg.origen + ': ' + msg.cmd)
 
                 if msg.cmd == 'kill':
                     break
@@ -100,6 +101,7 @@ class VideoCliente:
                 
                 if msg.cmd == 'play':
                     self.PLAYER.setEstado(1)
+                    print('Lista: ' + str(lista_ciclo.__len__()) + ' elementos')
             
             if lista_ciclo.__len__() == 0:
                 # Nada que hacer..

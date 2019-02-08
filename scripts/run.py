@@ -11,21 +11,12 @@ t_player = threading.Thread(
 q_principal = app.q_back
 q_player = app.q_player
 
-q_principal.put(
-    Mensaje(
-        'PRINCIPAL',
-        ''
-    )
-)
-
 t_player.start()
 
-app.SINCRO.sincronizar()
-
 q_principal.put(
     Mensaje(
         'PRINCIPAL',
-        'Iniciar'
+        'Sincronizar'
     )
 )
 
@@ -33,13 +24,15 @@ q_principal.put(
 while True:
     msj = q_principal.get()
 
+    print(msj.origen + ': ' + msj.cmd)
+
     if msj.origen == 'PRINCIPAL':
         # Enviar mensaje para detener e iniciar reproducción
-        if msj.cmd == 'Detener'
+        if msj.cmd == 'Detener':
             q_player.put(
                 Mensaje(
                     'PRINCIPAL',
-                    'stop_noidle'
+                    'stop'
                 )
             )
 
