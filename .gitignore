@@ -20,3 +20,4 @@ yarn-error.log
 */files*
 cfg.json
 *__pycache__*
+scripts/tmp_lista.json

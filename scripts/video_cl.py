@@ -71,7 +71,7 @@ class VideoCliente:
                     self.PLAYER.setEstado(0)
                     continue
                 
-                if msg.cmd == 'panic':
+                if msg.cmd == 'panic' or msg.cmd == 'stop_noidle':
                     self.PLAYER.stop()
 
                     orden = 0

@@ -35,6 +35,9 @@ class Sincro:
     # Última instancia de la lista de reproducción para este cliente
     lista = None
 
+    # Última instancia de la lista local para este cliente
+    lista_local = None
+
     def __init__(self, client_id, server_url, carpeta_local='contenido'):
         """
         Constructor principal. Toma como parámetros el client_id y la url del servidor,
@@ -134,7 +137,7 @@ class Sincro:
         """
         Determinar las diferencias de archivos y sincronizar lo necesario.
 
-        TODO: cancelar la sincro o reintentar si falla una descarga
+        TODO: resolver qué pasa si falla una descarga o guardado
         """
         if self.necesitoSincronizar():
             print("Actualizar lista...")
@@ -144,15 +147,16 @@ class Sincro:
                 json.dump(val['json'], fd)
 
         cambios = self.verificarContenido()
-        for id_video in cambios['descargar']:
-            print("Descargar id " + str(id_video))
-            self.descargarVideo(id_video)
-
+        
         for archivo in cambios['eliminar']:
             print("Borrar " + archivo)
             os.unlink(
                 os.path.join(self.PATH_CONTENIDO, archivo)
             )
+
+        for id_video in cambios['descargar']:
+            print("Descargar id " + str(id_video))
+            self.descargarVideo(id_video)
 
         cambios = self.verificarContenido()
 
@@ -242,18 +246,7 @@ class Sincro:
             return False
 
     def getListaLocal(self):
-        retlista = []
-        for video in self.lista.entries:
-            fullpath = os.path.join(self.CARPETA_VIDEOS_LOCAL, video.nombre_archivo)
-            if ' ' in fullpath:
-                if os.name == 'nt':
-                    fullpath = '"' + fullpath + '"'
-                else:
-                    fullpath = fullpath.replace(' ', '\ ')
-            
-            retlista.append(fullpath)
-        
-        return retlista
+        return self.lista.aLocal(self.PATH_CONTENIDO)
 
     def testearConexion(self):
         try:

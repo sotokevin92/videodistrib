@@ -13,7 +13,7 @@ class Lista:
         self.entries = entries
         self.vigente_desde = vigente_desde
         self.vigente_hasta = vigente_hasta
-        
+
 
     def __eq__(self, x):
         actual = self.entries
@@ -39,6 +39,23 @@ class Lista:
             archivos_lista[entry.nombre_archivo] = { 'hash': entry.hash, 'id': entry.id }
 
         return archivos_lista
+    
+    def aLocal(self, carpeta_local):
+        import os
+        retlista = []
+        for video in self.entries:
+            if not video.vigente():
+                continue
+
+            fullpath = os.path.join(carpeta_local, video.nombre_archivo)
+            if ' ' in fullpath:
+                if os.name == 'nt':
+                    fullpath = '"' + fullpath + '"'
+                else:
+                    fullpath = fullpath.replace(' ', '\ ')
+            
+            retlista.append(fullpath)
+        return retlista
 
 
     @classmethod

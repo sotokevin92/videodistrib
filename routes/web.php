@@ -56,7 +56,7 @@ Route::group(['middleware' => ['auth']], function() {
 });
 
 Route::get('/pantalla/{pantalla_id}/get_lista', 'SincroController@getLista');
-Route::post('/pantalla/{pantalla_id}/beacon', 'NowPlayingController@registrar');
+Route::post('/pantalla/{pantalla_id}/beacon', 'NowPlayingController@registrar')->name('pantalla_beacon');
 
 Route::get('/pantalla/{pantalla_id}/dl_video/{video_id}', 'SincroController@getVideoDL');
 
