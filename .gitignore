@@ -21,3 +21,4 @@ yarn-error.log
 cfg.json
 *__pycache__*
 scripts/tmp_lista.json
+composer.lock
