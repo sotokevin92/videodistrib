@@ -1,7 +1,0 @@
-{
-    "server": "http://127.0.0.1:8000",
-    "client_id": "999",
-    "cmd": "ffplay _FILE_ -autoexit -x 600 -y 600",
-    "idle_file": "0.mp4",
-    "subfolder_contenido": "contenido"
-}
