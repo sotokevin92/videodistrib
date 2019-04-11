@@ -1,5 +1,5 @@
 <div align="center" class="row" style="background: black;">
-    <video autoplay loop>
+	<video style="{{ $video->es_retrato ? 'height' : 'width' }}: 90%;" autoplay loop>
         <source src="{{ $video->proxy_url }}" type="video/mp4">
     </video>
 </div>
