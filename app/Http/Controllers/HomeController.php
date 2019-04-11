@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Pantalla;
+use App\NowPlaying;
 
 class HomeController extends Controller
 {
@@ -28,10 +28,10 @@ class HomeController extends Controller
     }
 
     public function dashboard() {
-        $pantallas = Pantalla::getActivos();
+        $nowplayings = NowPlaying::all();
 
         return view('manager.home', [
-            'pantallas' => $pantallas,
+            'nowplayings' => $nowplayings,
         ]);
     }
 }
