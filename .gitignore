@@ -17,7 +17,7 @@ yarn-error.log
 
 /scripts/contenido
 
-*/files*
+*/files/*
 cfg.json
 *__pycache__*
 scripts/tmp_lista.json
