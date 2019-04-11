@@ -16,7 +16,7 @@ class CreateNowPlayingsTable extends Migration
         Schema::create('now_playings', function (Blueprint $table) {
             $table->integer('id');
             $table->integer('orden');
-            $table->unsignedInteger('id_lista');
+            $table->integer('id_lista');
             $table->timestamps();
         });
     }
