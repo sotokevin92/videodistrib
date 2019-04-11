@@ -52,7 +52,8 @@ Route::group(['middleware' => ['auth']], function() {
     Route::post('/manager/asignar_listas', 'PantallaController@asignarListasAPantallas')->name('asignar_pantalla');
 
     // Polling / SSE
-    Route::get('/proceso/{id}', 'VideoController@getProcesoVideo');
+	Route::get('/proceso/{id}', 'VideoController@getProcesoVideo');
+	Route::get('/nowplaying/{pantalla_id}', 'NowPlayingController@current')->name('nowplaying_ajax');
 });
 
 Route::get('/pantalla/{pantalla_id}/get_lista', 'SincroController@getLista');

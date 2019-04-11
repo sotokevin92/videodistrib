@@ -276,7 +276,8 @@ class Video extends BaseModel
         // Setear path y aislar nombre de archivo del path
         $path = $this->nombre_archivo;
         $nombre_arch = basename($path);
-        $nombre_export = self::nombreDisponible($nombre_arch);
+		$nombre_export = iconv("UTF-8", "ASCII//IGNORE", $nombre_arch);
+		echo "Validar nombre de archivo: $nombre_arch -> $nombre_export\n\n";
 
         // Instanciar FFMpeg
         $ffmpeg = \FFMpeg\FFMpeg::create();
@@ -291,8 +292,10 @@ class Video extends BaseModel
         $format = new \FFMpeg\Format\Video\X264();
         // Callback para actualizar el proceso en BD
         $format->on('progress', function ($video, $format, $percentage) use ($proceso) {
-            $proceso->setPorcentaje($percentage / 2);
-            echo $proceso->porcentaje."\n";
+			if ($proceso->porcentaje != $percentage / 2) {
+				$proceso->setPorcentaje($percentage / 2);
+				echo $proceso->porcentaje."\n";
+			}
         });
 
         // Atributos del formato para el archivo proxy
@@ -341,9 +344,11 @@ class Video extends BaseModel
 
         $format = new \FFMpeg\Format\Video\X264();
         $format->on('progress', function ($video, $format, $percentage) use ($proceso) {
-            $proceso->setPorcentaje($percentage / 2 + 50);
-            echo $proceso->porcentaje."\n";
-        });
+			if ($proceso->porcentaje != $percentage / 2 + 50) {
+				$proceso->setPorcentaje($percentage / 2 + 50);
+				echo $proceso->porcentaje."\n";
+			}
+		});
 
         $format->setKiloBitrate(6000)            // Bitrate de video medio (6mbps)
                 ->setAudioChannels(1)           // Audio mono
