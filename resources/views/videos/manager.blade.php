@@ -75,7 +75,7 @@
                 </td>
                 <td>{{ Carbon\Carbon::createFromTimestampUTC($video->duracion)->format('i:s') }}</td>
                 <td>{{ $video->fecha_carga }}</td>
-                <td>{{ $video->vigente_desde }} - {{ $video->vigente_hasta }}</td>
+                <td>{{ $video->vigente_desde }} - {{ $video->vigente_hasta or '(indefinido)' }}</td>
                 <td>
                     @include('assets.formato_pantalla', ['retrato' => $video->retrato])
                 </td>

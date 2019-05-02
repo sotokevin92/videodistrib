@@ -7,13 +7,13 @@
             <input placeholder="{{ $video->nombre_archivo }}" class="form-control" type="text" name="descripcion" value="{{ $video->descripcion }}">
         </div>
         <div class="form-group">
-            <label for="vigente_desde">Fecha-hora comienzo de vigencia:</label>
-            <input placeholder="AAAA-MM-dd HH:mm:ss" class="form-control" type="text" name="vigente_desde" value="{{ $video->vigente_desde }}">
-        </div>
+			<label for="vigente_desde">Fecha de vigencia (comienzo)</label>
+			<input required class="form-control" type="datetime-local" name="vigente_desde" value="{{ $video->vigente_desde ? Carbon\Carbon::parse($video->vigente_desde)->format('Y-m-d\TH:i') : Carbon\Carbon::now()->format('Y-m-d\TH:i') }}">
+		</div>
         <div class="form-group">
-            <label for="vigente_hasta">Fecha-hora fin de vigencia:</label>
-            <input placeholder="AAAA-MM-dd HH:mm:ss" class="form-control" type="text" name="vigente_hasta" value="{{ $video->vigente_hasta }}">
-        </div>
+			<label for="vigente_hasta">Fecha de vigencia (fin)</label>
+			<input class="form-control" type="datetime-local" name="vigente_hasta" value="{{ $video->vigente_hasta ? Carbon\Carbon::parse($video->vigente_hasta)->format('Y-m-d\TH:i') : '' }}">
+		</div>
         <hr>
         <div class="form-group" align="right">
             <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
