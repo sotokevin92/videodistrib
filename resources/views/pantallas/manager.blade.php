@@ -5,19 +5,7 @@
 @endsection
 
 @section('contenido')
-<div class="modal fade" id="modal-gen">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header" style="vertical-align: middle;">
-                <button type="button" style="padding-top: 2px;" class="close" data-dismiss="modal"><i class="fa fa-lg fa-times"></i></button>
-                <h4 class="modal-title"></h4>
-            </div>
-            <div class="modal-body">
-
-            </div>
-        </div>
-    </div>
-</div>
+@include('modalgen')
 
 <div class="container-fluid">
     <a href="#" data-toggle="modal" data-target="#modal-gen" class="btn btn-default link_editar" data-id="-1"><i class="fa fa-plus"></i>&nbsp;&nbsp;Nueva pantalla</a>
