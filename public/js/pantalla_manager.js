@@ -25,7 +25,7 @@ $(function() {
     });
 
     $('.link_asignar').on('click', function(e) {
-        tituloModal('modal-gen', 'Asignar lista al pantalla');
+        tituloModal('modal-gen', 'Asignar lista a pantalla');
         cargarModal(
             'modal-gen',
             '/pantalla/asignar',
