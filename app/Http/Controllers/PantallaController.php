@@ -21,7 +21,7 @@ class PantallaController extends Controller
         $pantalla->retrato = $request->input('retrato') === 'retrato';
         $pantalla->save();
 
-        return redirect(route('pantalla_manager'));
+        return redirect($request->header('referer'));
     }
 
     public function toggleHabilitacionPantalla(Request $request) {
@@ -30,7 +30,7 @@ class PantallaController extends Controller
         $pantalla->habilitado = !$pantalla->habilitado;
         $pantalla->save();
 
-        return redirect(route('pantalla_manager'));
+        return redirect($request->header('referer'));
     }
 
     public function crearPantalla(Request $request) {
@@ -41,7 +41,7 @@ class PantallaController extends Controller
 
         $pantalla->save();
 
-        return redirect(route('pantalla_manager'));
+        return redirect($request->header('referer'));
     }
 
     public function eliminarPantalla(Request $request) {
@@ -49,7 +49,7 @@ class PantallaController extends Controller
 
         $pantalla->delete();
 
-        return redirect(route('pantalla_manager'));
+        return redirect($request->header('referer'));
     }
 
     public function modalEditarPantalla(Request $request) {
@@ -81,6 +81,6 @@ class PantallaController extends Controller
             $pantalla->clearLista();
         }
 
-        return redirect(route('pantalla_manager'));
+        return redirect($request->header('referer'));
     }
 }
